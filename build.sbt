@@ -27,8 +27,10 @@ libraryDependencies ++= Seq(
   "org.restlet.jse" % "org.restlet" % "2.0.11",
   "org.restlet.jse" % "org.restlet.ext.jackson" % "2.0.11",
   "org.restlet.jse" % "org.restlet.ext.slf4j"  % "2.0.11",
-  // Jena
-  "com.hp.hpl.jena" % "jena" % "2.6.4",
-  "com.hp.hpl.jena" % "arq" % "2.8.8"
+  "org.restlet.jse" % "org.restlet.ext.jetty"  % "2.0.11",
+  // Jena (exclude log4j bridge, since we have avsl instead)
+  "com.hp.hpl.jena" % "jena" % "2.6.4" exclude("org.slf4j", "slf4j-log4j12"),
+  "com.hp.hpl.jena" % "arq" % "2.8.8" exclude("org.slf4j", "slf4j-log4j12")
 )
+
 
