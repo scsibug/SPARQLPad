@@ -26,6 +26,9 @@ libraryDependencies ++= Seq(
   // Restlet
   "org.restlet.jse" % "org.restlet" % "2.0.11",
   "org.restlet.jse" % "org.restlet.ext.jackson" % "2.0.11",
-  "org.restlet.jse" % "org.restlet.ext.slf4j"  % "2.0.11"
+  "org.restlet.jse" % "org.restlet.ext.slf4j"  % "2.0.11",
+  // Jena
+  "com.hp.hpl.jena" % "jena" % "2.6.4",
+  "com.hp.hpl.jena" % "arq" % "2.8.8"
 )
 
