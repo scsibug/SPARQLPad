@@ -5,15 +5,6 @@ import org.restlet.resource.{ServerResource,Get}
 
 import org.slf4j._
 
-class DefRes extends ServerResource {
-  val logger = LoggerFactory.getLogger(classOf[DefRes])
-  logger.info("Resource created")
-  @Get
-  override def toString():String = {  
-    return "You've hit the default resource.";  
-  }
-}
-
 class SparqlProcessorResource extends ServerResource {
   val logger = LoggerFactory.getLogger(classOf[SparqlProcessorResource])
   logger.info("Resource created")
@@ -28,7 +19,6 @@ object MainApp extends Application {
   override def createRoot():Restlet = {
     println("MainApp starting");
     val router = new Router(getContext())
-    router.attachDefault(classOf[DefRes])
     router.attach("/sparqlDraft",classOf[SparqlProcessorResource])
     router
   }
