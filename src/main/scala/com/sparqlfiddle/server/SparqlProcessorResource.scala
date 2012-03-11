@@ -6,16 +6,20 @@ import org.restlet.representation.{Representation,StringRepresentation}
 import org.restlet.ext.jackson.{JacksonRepresentation}
 import org.slf4j._
 
+import java.io.ByteArrayInputStream
+
+import com.hp.hpl.jena.rdf.model.ModelFactory
+
 class SparqlProcessorResource extends ServerResource {
   val logger = LoggerFactory.getLogger(classOf[SparqlProcessorResource])
   logger.info("Resource created")
 
   @Get
-  override def toString():String = {  
-    return "You've hit the SPARQL processor, using the GET method.";  
+  override def toString():String = {
+    return "You've hit the SPARQL processor, using the GET method.";
   }
 
-  @Post  
+  @Post
   def process(entity:Representation):Representation = {
     var result:Representation = null
     val form = new Form(entity)
@@ -28,11 +32,20 @@ class SparqlProcessorResource extends ServerResource {
     logger.info("triples-format was "+tripleformatraw)
     if (sparqlraw != null && triplesraw != null && tripleformatraw != null) {
       setStatus(Status.SUCCESS_OK)
-      result = new JacksonRepresentation(DraftResponse("a sample response"))
+      result = new JacksonRepresentation(processQuery(sparqlraw, triplesraw, "Turtle"))
     } else {
       setStatus(Status.CLIENT_ERROR_BAD_REQUEST)
       result = new StringRepresentation("Missing form values", MediaType.TEXT_PLAIN)
     }
     result
+  }
+
+  def processQuery(sparql:String, triples:String, format:String):DraftResponse = {
+    // Create a model with the triples.
+    val model = ModelFactory.createDefaultModel()
+    // TODO: Wrap in an ontology model for inferencing
+    val in = new ByteArrayInputStream(triples.getBytes("UTF-8"));
+    model.read(in, null, format)
+    DraftResponse("just testing")
   }
 }
