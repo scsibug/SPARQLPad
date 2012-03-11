@@ -1,6 +1,6 @@
-import AssemblyKeys._ // put this at the top of the file
+import com.typesafe.startscript.StartScriptPlugin
 
-seq(assemblySettings: _*)
+seq(StartScriptPlugin.startScriptForJarSettings: _*)
 
 name := "sfserver"
 
