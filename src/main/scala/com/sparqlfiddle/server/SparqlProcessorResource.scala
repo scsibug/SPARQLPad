@@ -6,9 +6,12 @@ import org.restlet.representation.{Representation,StringRepresentation}
 import org.restlet.ext.jackson.{JacksonRepresentation}
 import org.slf4j._
 
+import scala.collection.JavaConversions._
+
 import java.io.ByteArrayInputStream
 
 import com.hp.hpl.jena.rdf.model.ModelFactory
+import com.hp.hpl.jena.query._
 
 class SparqlProcessorResource extends ServerResource {
   val logger = LoggerFactory.getLogger(classOf[SparqlProcessorResource])
@@ -41,11 +44,21 @@ class SparqlProcessorResource extends ServerResource {
   }
 
   def processQuery(sparql:String, triples:String, format:String):DraftResponse = {
+    var response:DraftResponse = null
     // Create a model with the triples.
     val model = ModelFactory.createDefaultModel()
     // TODO: Wrap in an ontology model for inferencing
     val in = new ByteArrayInputStream(triples.getBytes("UTF-8"));
     model.read(in, null, format)
-    DraftResponse("just testing")
+    val query = QueryFactory.create(sparql)
+    val queryExec = QueryExecutionFactory.create(query,model)
+    try {
+      val results = queryExec.execSelect()
+      val query_variables = results.getResultVars()
+      response = DraftResponse(query_variables.mkString(", "))
+    } catch {
+      case e:Exception => logger.error("Could not run query",e)
+    }
+    response
   }
 }
