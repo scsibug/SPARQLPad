@@ -17,7 +17,7 @@ object MainApp extends Application {
     // wrap subordinate apps
     val router = new Router(getContext())
     router.attach("/sparqlDraft",classOf[SparqlProcessorResource])
-    router.attach("/index", directory)
+    router.attach("/", classOf[IndexResource])
     router.attach("/static", directory)
     router
   }
