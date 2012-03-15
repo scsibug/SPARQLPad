@@ -12,6 +12,7 @@ import java.io.ByteArrayInputStream
 
 import com.hp.hpl.jena.rdf.model.ModelFactory
 import com.hp.hpl.jena.query._
+import com.hp.hpl.jena.query.Query._
 
 class SparqlProcessorResource extends ServerResource {
   val logger = LoggerFactory.getLogger(classOf[SparqlProcessorResource])
@@ -36,6 +37,7 @@ class SparqlProcessorResource extends ServerResource {
     if (sparqlraw != null && triplesraw != null && tripleformatraw != null) {
       setStatus(Status.SUCCESS_OK)
       result = new JacksonRepresentation(processQuery(sparqlraw, triplesraw, "Turtle"))
+      logger.info(result.toString())
     } else {
       setStatus(Status.CLIENT_ERROR_BAD_REQUEST)
       result = new StringRepresentation("Missing form values", MediaType.TEXT_PLAIN)
@@ -44,7 +46,7 @@ class SparqlProcessorResource extends ServerResource {
   }
 
   def processQuery(sparql:String, triples:String, format:String):DraftResponse = {
-    var response:DraftResponse = null
+    var dr:DraftResponse = null
     // Create a model with the triples.
     val model = ModelFactory.createDefaultModel()
     // TODO: Wrap in an ontology model for inferencing
@@ -53,12 +55,22 @@ class SparqlProcessorResource extends ServerResource {
     val query = QueryFactory.create(sparql)
     val queryExec = QueryExecutionFactory.create(query,model)
     try {
+      dr = new DraftResponse()
+      val queryType = query.getQueryType()
+      dr.queryType = queryType match {
+        case QueryTypeAsk => "Ask"
+        case QueryTypeConstruct => "Construct"
+        case QueryTypeDescribe => "Describe"
+        case QueryTypeSelect => "Select"
+        case QueryTypeUnknown => "Unknown"
+      }
       val results = queryExec.execSelect()
-      val query_variables = results.getResultVars()
-      response = DraftResponse(query_variables.mkString(", "))
+      val result_vars = results.getResultVars()
+      dr.variables = result_vars
+      logger.info("variables: " + result_vars.mkString(", "))
     } catch {
       case e:Exception => logger.error("Could not run query",e)
     }
-    response
+    dr
   }
 }
