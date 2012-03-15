@@ -26,6 +26,7 @@
 
     <!-- Le fav and touch icons -->
     <link rel="shortcut icon" href="static/assets/img/favicon.ico">
+
   </head>
 
   <body>
@@ -50,7 +51,7 @@
         </div>
       </div>
     </div>
-<form action="/sparqlDraft" method="POST">
+<form action="/sparqlDraft" method="POST" id="query-form">
     <div class="container-fluid">
       <div class="row-fluid">
 <!--
@@ -95,11 +96,14 @@
         </div>
       </div><!--/row-->
       <div class="span12">
-        <input type="hidden" name="tripleformat" value="n3"/>
- <button type="submit" class="btn btn-primary">Save changes</button>  
-            <button class="btn">Cancel</button>  
+        <button type="submit" id="query-submit" class="btn btn-primary">Submit Query</button>
       </div>
       <hr>
+
+      <div class="span12">
+        <h2 id="query-type"></h2>
+        <textarea id="query-results"> </textarea>
+      </div>
 
       <footer>
       </footer>
@@ -111,5 +115,24 @@
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="static/assets/js/jquery-1.7.1.min.js"></script>
     <script src="static/assets/js/bootstrap.min.js"></script>
+<script> 
+$(document).ready(function() {
+  $("#query-form").submit(function(event) {
+    event.preventDefault();
+
+    var $form = $(this),
+        sparql = $("#sparql").val(),
+        triples = $("#triples").val(),
+        tripleformat = $("#tripleformat").val(),
+        url = $form.attr('action');
+    $.post(url, {sparql: sparql, triples: triples, tripleformat: "n3"},
+      function(data) {
+        $("#query-type").text(data.queryType + " Query Results");
+        $("#query-results").val(data.queryType);
+      });
+
+  });
+});
+</script> 
   </body>
 </html>

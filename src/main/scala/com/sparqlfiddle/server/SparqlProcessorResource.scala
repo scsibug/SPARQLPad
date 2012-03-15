@@ -64,6 +64,7 @@ class SparqlProcessorResource extends ServerResource {
         case QueryTypeSelect => "Select"
         case QueryTypeUnknown => "Unknown"
       }
+      // TODO: run the correct query type
       val results = queryExec.execSelect()
       val result_vars = results.getResultVars()
       dr.variables = result_vars
