@@ -102,7 +102,8 @@
 
       <div class="span12">
         <h2 id="query-type"></h2>
-        <textarea id="query-results"> </textarea>
+        <table id="results-table" class="table table-bordered table-striped"> 
+        </table>
       </div>
 
       <footer>
@@ -118,18 +119,36 @@
 <script> 
 $(document).ready(function() {
   $("#query-form").submit(function(event) {
-    event.preventDefault();
+  event.preventDefault();
+  var $form = $(this),
+  sparql = $("#sparql").val(),
+  triples = $("#triples").val(),
+  tripleformat = $("#tripleformat").val(),
+  url = $form.attr('action');
+  $.post(url, {sparql: sparql, triples: triples, tripleformat: "n3"},
+    function(data) {
+      $("#query-type").text(data.queryType + " Query Results");
+      // Clear previous results.
+      $("#results-table").empty();
 
-    var $form = $(this),
-        sparql = $("#sparql").val(),
-        triples = $("#triples").val(),
-        tripleformat = $("#tripleformat").val(),
-        url = $form.attr('action');
-    $.post(url, {sparql: sparql, triples: triples, tripleformat: "n3"},
-      function(data) {
-        $("#query-type").text(data.queryType + " Query Results");
-        $("#query-results").val(data.queryType);
-      });
+      // Set header row to variable names
+      var header = '<thead><tr>';
+      for(i=0; i<data.variables.length; i++) {
+        header += '<th>'+data.variables[i]+'</th>'
+      }
+      header += '</tr></thead>'
+      $('#results-table').append(header);
+      // Set rows to result data
+      var rows = '';
+      for(i=0; i<data.results.length; i++) {
+        rows += '<tr>';
+        for (j=0; j<data.results[i].length; j++) {
+          rows += '<td>'+data.results[i][j]+'</td>'
+        }
+        rows += '</tr>';
+      }
+      $('#results-table').append(rows);
+    });
   });
 });
 </script> 
