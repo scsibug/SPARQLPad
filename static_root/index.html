@@ -39,14 +39,16 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="#">Project name</a>
+          <a class="brand" href="#">SPARQL Fiddle</a>
           <div class="nav-collapse">
             <ul class="nav">
-              <li class="active"><a href="#">Home</a></li>
+              <li class="active"><a id="show-example" href="#">Example Query</a></li>
+<!--
               <li><a href="#about">About</a></li>
               <li><a href="#contact">Contact</a></li>
+-->
             </ul>
-            <p class="navbar-text pull-right">Logged in as <a href="#">username</a></p>
+<!--            <p class="navbar-text pull-right">Logged in as <a href="#">username</a></p> -->
           </div><!--/.nav-collapse -->
         </div>
       </div>
@@ -118,20 +120,38 @@
     <script src="static/assets/js/bootstrap.min.js"></script>
 <script> 
 $(document).ready(function() {
+
+  $("#show-example").click(function(event) {
+    // Set text of SPARQL query
+    var sparql_example = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
+      + "SELECT ?name ?email\n"
+      + "WHERE {\n"
+      + "  ?person a foaf:Person.\n"
+      + "  ?person foaf:name ?name.\n"
+      + "  ?person foaf:mbox ?email.\n"
+      + "}";
+    $("#sparql").val(sparql_example);
+    // Set text of RDF triples
+    var triples_example = "@prefix foaf: <http://xmlns.com/foaf/0.1/>.\n"
+      + "<http://example.com/me> a foaf:Person.\n"
+      + "<http://example.com/me> foaf:name \"Greg Heartsfield\".\n"
+      + "<http://example.com/me> foaf:mbox <mailto:scsibug@imap.cc>.\n";
+    $("#triples").val(triples_example);
+  });
+
   $("#query-form").submit(function(event) {
-  event.preventDefault();
-  var $form = $(this),
-  sparql = $("#sparql").val(),
-  triples = $("#triples").val(),
-  tripleformat = $("#tripleformat").val(),
-  url = $form.attr('action');
-  $.post(url, {sparql: sparql, triples: triples, tripleformat: "n3"},
-    function(data) {
+    event.preventDefault();
+    var $form = $(this),
+    sparql = $("#sparql").val(),
+    triples = $("#triples").val(),
+    tripleformat = $("#tripleformat").val(),
+      url = $form.attr('action');
+
+    $.post(url, {sparql: sparql, triples: triples, tripleformat: "n3"}, function(data) {
       $("#query-type").text(data.queryType + " Query Results");
       // Clear previous results.
       $("#results-table").empty();
-
-      // Set header row to variable names
+       // Set header row to variable names
       var header = '<thead><tr>';
       for(i=0; i<data.variables.length; i++) {
         header += '<th>'+data.variables[i]+'</th>'
@@ -151,6 +171,7 @@ $(document).ready(function() {
     });
   });
 });
+
 </script> 
   </body>
 </html>
