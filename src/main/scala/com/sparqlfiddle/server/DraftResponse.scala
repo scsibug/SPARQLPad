@@ -1,9 +1,10 @@
 package com.sparqlfiddle.server
 
 import java.util.List
-import java.util.Map
 import java.util.Vector
 import org.slf4j._
+import scala.collection.JavaConversions._
+
 // Response to a SPARQL "Draft" POST.  Right now we only return a
 // string, but we'll eventually serialize an entire SPARQL response.
 
@@ -17,12 +18,11 @@ class DraftResponse {
   @scala.reflect.BeanProperty
   var queryType: String = null
 
+  // Result order matches that of 'variables'
   @scala.reflect.BeanProperty
-  var results: List[Map[String,String]] = new Vector[Map[String,String]]
+  var results: List[List[String]] = new Vector[List[String]](50)
   
-  def addResult(r:Map[String,String]) {
-    results.add(r)
-  }
+  def addResult(r:List[String]) = results.add(r)
 }
 
 /**

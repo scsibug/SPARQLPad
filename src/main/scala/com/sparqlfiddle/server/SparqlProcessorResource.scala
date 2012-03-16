@@ -5,7 +5,7 @@ import org.restlet.resource.{ServerResource,Get,Post}
 import org.restlet.representation.{Representation,StringRepresentation}
 import org.restlet.ext.jackson.{JacksonRepresentation}
 import java.util.List
-import java.util.HashMap
+import java.util.Vector
 import org.slf4j._
 
 import scala.collection.JavaConversions._
@@ -74,13 +74,15 @@ class SparqlProcessorResource extends ServerResource {
       while (results.hasNext()) {
         val qs = results.next() // get a query solution
         val varsIter = qs.varNames()
-        val rmap = new HashMap[String,String]
+        val vres = new Vector[String](result_vars.size())
+        vres.setSize(result_vars.size())
         while (varsIter.hasNext()) {
           val thisVar = varsIter.next()
           val nodeRep = qs.get(thisVar).toString()
-          rmap.put(thisVar,nodeRep)
+          logger.info("Found result: "+nodeRep+" for variable "+thisVar)
+          vres.setElementAt(nodeRep,result_vars.indexOf(thisVar))
         }
-        dr.addResult(rmap)
+        dr.addResult(vres)
       }
     } catch {
       case e:Exception => logger.error("Could not run query",e)
