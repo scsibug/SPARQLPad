@@ -4,6 +4,8 @@ import org.restlet.data.{Protocol,Form,Status,MediaType}
 import org.restlet.resource.{ServerResource,Get,Post}
 import org.restlet.representation.{Representation,StringRepresentation}
 import org.restlet.ext.jackson.{JacksonRepresentation}
+import java.util.List
+import java.util.HashMap
 import org.slf4j._
 
 import scala.collection.JavaConversions._
@@ -69,6 +71,17 @@ class SparqlProcessorResource extends ServerResource {
       val result_vars = results.getResultVars()
       dr.variables = result_vars
       logger.info("variables: " + result_vars.mkString(", "))
+      while (results.hasNext()) {
+        val qs = results.next() // get a query solution
+        val varsIter = qs.varNames()
+        val rmap = new HashMap[String,String]
+        while (varsIter.hasNext()) {
+          val thisVar = varsIter.next()
+          val nodeRep = qs.get(thisVar).toString()
+          rmap.put(thisVar,nodeRep)
+        }
+        dr.addResult(rmap)
+      }
     } catch {
       case e:Exception => logger.error("Could not run query",e)
     }
