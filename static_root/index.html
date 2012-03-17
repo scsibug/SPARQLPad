@@ -9,6 +9,7 @@
 
     <!-- Le styles -->
     <link href="static/assets/css/bootstrap.css" rel="stylesheet">
+    <link href="static/assets/css/sparqlfiddle.css" rel="stylesheet">
     <style type="text/css">
       body {
         padding-top: 60px;
@@ -102,6 +103,9 @@
       </div>
       <hr>
 
+      <div class="span6" id="ajax-error-container">
+      </div>
+
       <div class="span12">
         <h2 id="query-type"></h2>
         <table id="results-table" class="table table-bordered table-striped"> 
@@ -118,9 +122,22 @@
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="static/assets/js/jquery-1.7.1.min.js"></script>
     <script src="static/assets/js/bootstrap.min.js"></script>
+    <script src="static/assets/js/bootstrap-alert.min.js"></script>
 <script> 
-$(document).ready(function() {
 
+var showError = function(text) {
+  var err = "<div id=\"main-alert\" class=\"alert\"><a class=\"close\" data-dismiss=\"alert\">×</a>"
+          + "<strong>Warning!</strong> <span id=\"request-connection-error-msg\">"+text+"</span></div></div>";
+  $("#ajax-error-container").empty();
+  $("#ajax-error-container").append(err);
+  $("#main-alert").alert();
+};
+
+var clearError = function() {
+  $("#main-alert").alert('close');
+}
+
+$(document).ready(function() {
   $("#show-example").click(function(event) {
     // Set text of SPARQL query
     var sparql_example = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
@@ -139,6 +156,10 @@ $(document).ready(function() {
     $("#triples").val(triples_example);
   });
 
+  $("#ajax-error-container").ajaxError(function (e, jqxhr, settings, exception) {
+    showError("Error requesting page "+settings.url);
+  });
+
   $("#query-form").submit(function(event) {
     event.preventDefault();
     var $form = $(this),
@@ -148,9 +169,18 @@ $(document).ready(function() {
       url = $form.attr('action');
 
     $.post(url, {sparql: sparql, triples: triples, tripleformat: "n3"}, function(data) {
-      $("#query-type").text(data.queryType + " Query Results");
-      // Clear previous results.
+      // Clear previous results/header
+      $("#query-type").text("");
       $("#results-table").empty();
+      // check for server-side errors
+      if (data.error && data.error.length > 0) {
+        var error_str = $('<div/>').text(data.error).html();
+        showError(error_str);
+        return;
+      }
+      // Clear any errors left over
+      clearError();
+      $("#query-type").text(data.queryType + " Query Results");
        // Set header row to variable names
       var header = '<thead><tr>';
       for(i=0; i<data.variables.length; i++) {

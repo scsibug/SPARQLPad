@@ -48,44 +48,52 @@ class SparqlProcessorResource extends ServerResource {
   }
 
   def processQuery(sparql:String, triples:String, format:String):DraftResponse = {
-    var dr:DraftResponse = null
+    var dr:DraftResponse = new DraftResponse()
     // Create a model with the triples.
     val model = ModelFactory.createDefaultModel()
     // TODO: Wrap in an ontology model for inferencing
     val in = new ByteArrayInputStream(triples.getBytes("UTF-8"));
+    try {
     model.read(in, null, format)
     val query = QueryFactory.create(sparql)
     val queryExec = QueryExecutionFactory.create(query,model)
-    try {
-      dr = new DraftResponse()
       val queryType = query.getQueryType()
-      dr.queryType = queryType match {
-        case QueryTypeAsk => "Ask"
-        case QueryTypeConstruct => "Construct"
-        case QueryTypeDescribe => "Describe"
-        case QueryTypeSelect => "Select"
-        case QueryTypeUnknown => "Unknown"
-      }
-      // TODO: run the correct query type
-      val results = queryExec.execSelect()
-      val result_vars = results.getResultVars()
-      dr.variables = result_vars
-      logger.info("variables: " + result_vars.mkString(", "))
-      while (results.hasNext()) {
-        val qs = results.next() // get a query solution
-        val varsIter = qs.varNames()
-        val vres = new Vector[String](result_vars.size())
-        vres.setSize(result_vars.size())
-        while (varsIter.hasNext()) {
-          val thisVar = varsIter.next()
-          val nodeRep = qs.get(thisVar).toString()
-          logger.info("Found result: "+nodeRep+" for variable "+thisVar)
-          vres.setElementAt(nodeRep,result_vars.indexOf(thisVar))
-        }
-        dr.addResult(vres)
+      dr = queryType match {
+        case QueryTypeAsk => {dr.error = "Ask queries not supported yet"; dr.queryType = "Ask";dr}
+        case QueryTypeConstruct => {dr.error = "Construct queries not supported yet"; dr.queryType = "Construct";dr}
+        case QueryTypeDescribe => {dr.error = "Describe queries not supported yet"; dr.queryType = "Describe";dr}
+        case QueryTypeSelect => {processSelectQuery(queryExec)}
+        case QueryTypeUnknown => {dr.error = "Could not determine query type"; dr.queryType = "Unknown";dr}
       }
     } catch {
-      case e:Exception => logger.error("Could not run query",e)
+      // TODO: distinguish SPARQL errors from Triples errors
+      case e:QueryParseException => {logger.info("Could not parse SPARQL",e); dr.error = e.getMessage()}
+      case e:com.hp.hpl.jena.n3.turtle.TurtleParseException => {logger.info("Could not parse triples (Turtle)",e); dr.error = e.getMessage()}
+      case e:com.hp.hpl.jena.shared.JenaException => {logger.info("Could not parse triples",e); dr.error = e.getMessage()}
+      case e:Exception => {logger.error("Could not run query",e); dr.error = "Could not execute query"}
+    }
+    dr
+  }
+
+  def processSelectQuery(queryExec:QueryExecution):DraftResponse = {
+    val dr = new DraftResponse()
+    dr.queryType = "Select"
+    val results = queryExec.execSelect()
+    val result_vars = results.getResultVars()
+    dr.variables = result_vars
+    logger.info("variables: " + result_vars.mkString(", "))
+    while (results.hasNext()) {
+      val qs = results.next() // get a query solution
+      val varsIter = qs.varNames()
+      val vres = new Vector[String](result_vars.size())
+      vres.setSize(result_vars.size())
+      while (varsIter.hasNext()) {
+        val thisVar = varsIter.next()
+        val nodeRep = qs.get(thisVar).toString()
+        logger.info("Found result: "+nodeRep+" for variable "+thisVar)
+        vres.setElementAt(nodeRep,result_vars.indexOf(thisVar))
+      }
+      dr.addResult(vres)
     }
     dr
   }
