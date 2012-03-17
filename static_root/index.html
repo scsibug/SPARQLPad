@@ -71,10 +71,14 @@
         </div>
       </div>
       <div class="span12">
-        <button type="submit" id="query-submit" class="btn btn-primary">Submit Query</button>
+        <div class="btn-toolbar">
+          <button type="submit" id="query-submit" class="btn btn-primary">Submit Query</button>
+        </div>
       </div>
 
-      <div class="span6" id="ajax-error-container">
+      <div class="row">
+        <div class="span6" id="ajax-error-container">
+        </div>
       </div>
 
       <div class="span12">
@@ -148,7 +152,8 @@ $(document).ready(function() {
       }
       // Clear any errors left over
       clearError();
-      $("#query-type").text(data.queryType + " Query Results");
+      $("#query-type").empty();
+      $("#query-type").append("<h2>"+data.queryType+" Query Results</h2>");
        // Set header row to variable names
       var header = '<thead><tr>';
       for(i=0; i<data.variables.length; i++) {
