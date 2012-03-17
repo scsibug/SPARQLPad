@@ -44,42 +44,14 @@
           <div class="nav-collapse">
             <ul class="nav">
               <li class="active"><a id="show-example" href="#">Example Query</a></li>
-<!--
-              <li><a href="#about">About</a></li>
-              <li><a href="#contact">Contact</a></li>
--->
             </ul>
-<!--            <p class="navbar-text pull-right">Logged in as <a href="#">username</a></p> -->
-          </div><!--/.nav-collapse -->
+          </div>
         </div>
       </div>
     </div>
 <form action="/sparqlDraft" method="POST" id="query-form">
     <div class="container-fluid">
       <div class="row-fluid">
-<!--
-        <div class="span3">
-          <div class="well sidebar-nav">
-            <ul class="nav nav-list">
-              <li class="nav-header">Sidebar</li>
-              <li class="active"><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li class="nav-header">Sidebar</li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li class="nav-header">Sidebar</li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-            </ul>
-          </div>
-        </div> -->
 
         <div class="span5">
           <div class="control-group">  
@@ -97,17 +69,16 @@
             </div>  
           </div>  
         </div>
-      </div><!--/row-->
+      </div>
       <div class="span12">
         <button type="submit" id="query-submit" class="btn btn-primary">Submit Query</button>
       </div>
-      <hr>
 
       <div class="span6" id="ajax-error-container">
       </div>
 
       <div class="span12">
-        <h2 id="query-type"></h2>
+        <span id="query-type"></span>
         <table id="results-table" class="table table-bordered table-striped"> 
         </table>
       </div>
@@ -117,9 +88,6 @@
 
     </div><!--/.fluid-container-->
 </form>
-    <!-- Le javascript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
     <script src="static/assets/js/jquery-1.7.1.min.js"></script>
     <script src="static/assets/js/bootstrap.min.js"></script>
     <script src="static/assets/js/bootstrap-alert.min.js"></script>
