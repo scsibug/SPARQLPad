@@ -1,3 +1,7 @@
 #results-table { 
   display: none;
 }
+
+.sf-input { 
+  width: 100%
+}

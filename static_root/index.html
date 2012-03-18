@@ -53,19 +53,19 @@
     <div class="container-fluid">
       <div class="row-fluid">
 
-        <div class="span5">
+        <div class="span6">
           <div class="control-group">  
             <label class="control-label" for="textarea">SPARQL Query</label>  
             <div class="controls">  
-              <textarea class="input-xlarge" name="sparql" id="sparql" rows="3"></textarea>  
+              <textarea class="input-xlarge sf-input" name="sparql" id="sparql" rows="10"></textarea>  
             </div>  
           </div>  
         </div>
-        <div class="span5">
+        <div class="span6">
           <div class="control-group">  
-            <label class="control-label" for="textarea">RDF Triples</label>
-            <div class="controls">  
-              <textarea class="input-xlarge" name="triples" id="triples" rows="3"></textarea>  
+            <label class="control-label" for="textarea">RDF Triples (Turtle)</label>
+            <div class="controls">
+              <textarea class="input-xlarge sf-input" name="triples" id="triples" rows="10"></textarea>  
             </div>  
           </div>  
         </div>
@@ -157,7 +157,7 @@ $(document).ready(function() {
        // Set header row to variable names
       var header = '<thead><tr>';
       for(i=0; i<data.variables.length; i++) {
-        header += '<th>'+data.variables[i]+'</th>'
+        header += '<th><h3>'+data.variables[i]+'</h3></th>'
       }
       header += '</tr></thead>'
       $('#results-table').append(header);
