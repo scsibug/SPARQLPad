@@ -4,7 +4,7 @@ seq(StartScriptPlugin.startScriptForJarSettings: _*)
 
 name := "sfserver"
 
-organization := "com.sparqlfiddle"
+organization := "com.sparqlpad"
 
 version := "0.1"
 

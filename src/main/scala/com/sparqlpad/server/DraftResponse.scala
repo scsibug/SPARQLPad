@@ -1,4 +1,4 @@
-package com.sparqlfiddle.server
+package com.sparqlpad.server
 
 import java.util.List
 import java.util.Vector

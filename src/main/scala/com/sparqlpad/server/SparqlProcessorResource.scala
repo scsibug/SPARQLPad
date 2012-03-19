@@ -1,4 +1,4 @@
-package com.sparqlfiddle.server
+package com.sparqlpad.server
 
 import org.restlet.data.{Protocol,Form,Status,MediaType}
 import org.restlet.resource.{ServerResource,Get,Post}

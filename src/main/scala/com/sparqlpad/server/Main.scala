@@ -1,4 +1,4 @@
-package com.sparqlfiddle.server
+package com.sparqlpad.server
 import org.restlet.{Restlet,Server,Application,Component}
 import org.restlet.routing.Router
 import org.restlet.resource.Directory
