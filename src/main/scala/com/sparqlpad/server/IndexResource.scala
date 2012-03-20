@@ -8,6 +8,7 @@ import org.slf4j._
 class IndexResource extends ServerResource {
   @Get
   def home(entity:Representation):Representation = {
-    new FileRepresentation(new java.io.File("static_root/index.html"), MediaType.TEXT_HTML)
+    // ttl: 8hrs
+    new FileRepresentation(new java.io.File("static_root/index.html"), MediaType.TEXT_HTML,(8*60*60))
   }
 }
