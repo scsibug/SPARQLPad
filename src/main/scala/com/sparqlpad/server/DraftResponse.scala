@@ -21,6 +21,12 @@ class DraftResponse {
   @scala.reflect.BeanProperty
   var error: String = null
 
+  @scala.reflect.BeanProperty
+  var queryExecutionTime: Long = 0
+
+  @scala.reflect.BeanProperty
+  var resultsExecutionTime: Long = 0
+
   // Result order matches that of 'variables'
   @scala.reflect.BeanProperty
   var results: List[List[String]] = new Vector[List[String]](50)

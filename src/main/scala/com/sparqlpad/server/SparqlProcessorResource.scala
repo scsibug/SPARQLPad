@@ -78,7 +78,10 @@ class SparqlProcessorResource extends ServerResource {
   def processSelectQuery(queryExec:QueryExecution):DraftResponse = {
     val dr = new DraftResponse()
     dr.queryType = "Select"
+    val startQueryTime = System.nanoTime()
     val results = queryExec.execSelect()
+    dr.queryExecutionTime = (System.nanoTime() - startQueryTime)/1000000l
+    val startResultsTime = System.nanoTime()
     val result_vars = results.getResultVars()
     dr.variables = result_vars
     logger.info("variables: " + result_vars.mkString(", "))
@@ -95,6 +98,7 @@ class SparqlProcessorResource extends ServerResource {
       }
       dr.addResult(vres)
     }
+    dr.resultsExecutionTime = (System.nanoTime() - startResultsTime)/1000000l
     dr
   }
 }

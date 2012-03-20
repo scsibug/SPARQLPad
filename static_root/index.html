@@ -153,7 +153,7 @@ $(document).ready(function() {
       // Clear any errors left over
       clearError();
       $("#query-type").empty();
-      $("#query-type").append("<h2>"+data.queryType+" Query Results</h2>");
+      $("#query-type").append("<h2>"+data.queryType+" Query Results</h2>("+data.queryExecutionTime +"ms query, "+data.resultsExecutionTime+"ms results)");
        // Set header row to variable names
       var header = '<thead><tr>';
       for(i=0; i<data.variables.length; i++) {
