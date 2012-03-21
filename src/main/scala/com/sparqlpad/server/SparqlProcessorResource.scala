@@ -61,7 +61,7 @@ class SparqlProcessorResource extends ServerResource {
       dr = queryType match {
         case QueryTypeAsk => {processAskQuery(queryExec)}
         case QueryTypeConstruct => {processConstructQuery(queryExec)}
-        case QueryTypeDescribe => {dr.error = "Describe queries not supported yet"; dr.queryType = "Describe";dr}
+        case QueryTypeDescribe => {processDescribeQuery(queryExec)}
         case QueryTypeSelect => {processSelectQuery(queryExec)}
         case QueryTypeUnknown => {dr.error = "Could not determine query type"; dr.queryType = "Unknown";dr}
       }
@@ -96,6 +96,31 @@ class SparqlProcessorResource extends ServerResource {
     dr.queryType = "Construct"
     val startQueryTime = System.nanoTime()
     val resultmodel = queryExec.execConstruct()
+    dr.queryExecutionTime = (System.nanoTime() - startQueryTime)/1000000l
+    val startResultsTime = System.nanoTime()
+    val stmtiter = resultmodel.listStatements()
+    val vars = new Vector[String](3)
+    vars.add("Subject")
+    vars.add("Predicate")
+    vars.add("Object")
+    dr.variables = vars
+    while (stmtiter.hasNext()) {
+      val stmt = stmtiter.nextStatement() // get a statement in the model
+      val vres = new Vector[String](3)
+      vres.add(stmt.getSubject().getURI())
+      vres.add(stmt.getPredicate().getURI())
+      vres.add(stmt.getObject().toString())
+      dr.addResult(vres)
+    }
+    dr.resultsExecutionTime = (System.nanoTime() - startResultsTime)/1000000l
+    dr
+  }
+
+  def processDescribeQuery(queryExec:QueryExecution):DraftResponse = {
+    val dr = new DraftResponse()
+    dr.queryType = "Describe"
+    val startQueryTime = System.nanoTime()
+    val resultmodel = queryExec.execDescribe()
     dr.queryExecutionTime = (System.nanoTime() - startQueryTime)/1000000l
     val startResultsTime = System.nanoTime()
     val stmtiter = resultmodel.listStatements()
