@@ -60,7 +60,7 @@ class SparqlProcessorResource extends ServerResource {
       val queryType = query.getQueryType()
       dr = queryType match {
         case QueryTypeAsk => {dr.error = "Ask queries not supported yet"; dr.queryType = "Ask";dr}
-        case QueryTypeConstruct => {dr.error = "Construct queries not supported yet"; dr.queryType = "Construct";dr}
+        case QueryTypeConstruct => {processConstructQuery(queryExec)}
         case QueryTypeDescribe => {dr.error = "Describe queries not supported yet"; dr.queryType = "Describe";dr}
         case QueryTypeSelect => {processSelectQuery(queryExec)}
         case QueryTypeUnknown => {dr.error = "Could not determine query type"; dr.queryType = "Unknown";dr}
@@ -72,6 +72,31 @@ class SparqlProcessorResource extends ServerResource {
       case e:com.hp.hpl.jena.shared.JenaException => {logger.info("Could not parse triples",e); dr.error = e.getMessage()}
       case e:Exception => {logger.error("Could not run query",e); dr.error = "Could not execute query"}
     }
+    dr
+  }
+
+  def processConstructQuery(queryExec:QueryExecution):DraftResponse = {
+    val dr = new DraftResponse()
+    dr.queryType = "Construct"
+    val startQueryTime = System.nanoTime()
+    val resultmodel = queryExec.execConstruct()
+    dr.queryExecutionTime = (System.nanoTime() - startQueryTime)/1000000l
+    val startResultsTime = System.nanoTime()
+    val stmtiter = resultmodel.listStatements()
+    val vars = new Vector[String](3)
+    vars.add("Subject")
+    vars.add("Predicate")
+    vars.add("Object")
+    dr.variables = vars
+    while (stmtiter.hasNext()) {
+      val stmt = stmtiter.nextStatement() // get a statement in the model
+      val vres = new Vector[String](3)
+      vres.add(stmt.getSubject().getURI())
+      vres.add(stmt.getPredicate().getURI())
+      vres.add(stmt.getObject().toString())
+      dr.addResult(vres)
+    }
+    dr.resultsExecutionTime = (System.nanoTime() - startResultsTime)/1000000l
     dr
   }
 
