@@ -54,9 +54,9 @@ class SparqlProcessorResource extends ServerResource {
     // TODO: Wrap in an ontology model for inferencing
     val in = new ByteArrayInputStream(triples.getBytes("UTF-8"));
     try {
-    model.read(in, null, format)
-    val query = QueryFactory.create(sparql)
-    val queryExec = QueryExecutionFactory.create(query,model)
+      model.read(in, "http://sparqlpad.com/relative-uri/", format) // make up a relative URI so local file paths do not show through.
+      val query = QueryFactory.create(sparql)
+      val queryExec = QueryExecutionFactory.create(query,model)
       val queryType = query.getQueryType()
       dr = queryType match {
         case QueryTypeAsk => {processAskQuery(queryExec)}
