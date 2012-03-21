@@ -59,7 +59,7 @@ class SparqlProcessorResource extends ServerResource {
     val queryExec = QueryExecutionFactory.create(query,model)
       val queryType = query.getQueryType()
       dr = queryType match {
-        case QueryTypeAsk => {dr.error = "Ask queries not supported yet"; dr.queryType = "Ask";dr}
+        case QueryTypeAsk => {processAskQuery(queryExec)}
         case QueryTypeConstruct => {processConstructQuery(queryExec)}
         case QueryTypeDescribe => {dr.error = "Describe queries not supported yet"; dr.queryType = "Describe";dr}
         case QueryTypeSelect => {processSelectQuery(queryExec)}
@@ -72,6 +72,22 @@ class SparqlProcessorResource extends ServerResource {
       case e:com.hp.hpl.jena.shared.JenaException => {logger.info("Could not parse triples",e); dr.error = e.getMessage()}
       case e:Exception => {logger.error("Could not run query",e); dr.error = "Could not execute query"}
     }
+    dr
+  }
+
+  def processAskQuery(queryExec:QueryExecution):DraftResponse = {
+    val dr = new DraftResponse()
+    dr.queryType = "Ask"
+    val startQueryTime = System.nanoTime()
+    val askresult = queryExec.execAsk()
+    dr.queryExecutionTime = (System.nanoTime() - startQueryTime)/1000000l
+    val vars = new Vector[String](3)
+    vars.add("Result")
+    dr.variables = vars
+    val vres = new Vector[String](1)
+    vres.add(askresult.toString())
+    dr.addResult(vres)
+    dr.resultsExecutionTime = 0
     dr
   }
 
