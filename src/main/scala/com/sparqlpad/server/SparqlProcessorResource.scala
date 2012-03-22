@@ -15,6 +15,7 @@ import java.io.ByteArrayInputStream
 import com.hp.hpl.jena.rdf.model.ModelFactory
 import com.hp.hpl.jena.query._
 import com.hp.hpl.jena.query.Query._
+import com.hp.hpl.jena.ontology.OntModelSpec._
 
 class SparqlProcessorResource extends ServerResource {
   val logger = LoggerFactory.getLogger(classOf[SparqlProcessorResource])
@@ -32,13 +33,14 @@ class SparqlProcessorResource extends ServerResource {
     // expect "sparql", "triples", and "triple-format" entries.
     val sparqlraw = form.getFirstValue("sparql")
     val triplesraw = form.getFirstValue("triples")
+    val inferencingSpec = form.getFirstValue("inferencingSpec")
     val tripleformatraw = form.getFirstValue("tripleformat")
     logger.info("sparql was "+sparqlraw)
     logger.info("triples was "+triplesraw)
     logger.info("triples-format was "+tripleformatraw)
     if (sparqlraw != null && triplesraw != null && tripleformatraw != null) {
       setStatus(Status.SUCCESS_OK)
-      result = new JacksonRepresentation(processQuery(sparqlraw, triplesraw, "Turtle"))
+      result = new JacksonRepresentation(processQuery(sparqlraw, triplesraw, inferencingSpec, "Turtle"))
       logger.info(result.toString())
     } else {
       setStatus(Status.CLIENT_ERROR_BAD_REQUEST)
@@ -47,10 +49,16 @@ class SparqlProcessorResource extends ServerResource {
     result
   }
 
-  def processQuery(sparql:String, triples:String, format:String):DraftResponse = {
+  def processQuery(sparql:String, triples:String, inferencingSpec: String, format:String):DraftResponse = {
     var dr:DraftResponse = new DraftResponse()
     // Create a model with the triples.
-    val model = ModelFactory.createDefaultModel()
+    //val model = ModelFactory.createDefaultModel()
+    val model = inferencingSpec match {
+      case "Transitive" => ModelFactory.createOntologyModel(RDFS_MEM_TRANS_INF) // only subClassOf/subPropertyOf transitive/reflexive relations
+      case "RDFS" => ModelFactory.createOntologyModel(RDFS_MEM_RDFS_INF) // (subset of) RDFS entailments
+      case "OWL" => ModelFactory.createOntologyModel(OWL_DL_MEM_RDFS_INF) // OWL DL
+      case _ => ModelFactory.createDefaultModel() // None
+    }
     // TODO: Wrap in an ontology model for inferencing
     val in = new ByteArrayInputStream(triples.getBytes("UTF-8"));
     try {
