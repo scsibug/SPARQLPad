@@ -69,6 +69,17 @@
               </select>
               </div>
             <li class="nav-header">
+              Query Syntax
+            </li>
+            <li class="active">
+              <div class="controls">
+              <select class="navbar-select" id="querySyntax">
+                <option>SPARQL 1.0</option>
+                <option selected>SPARQL 1.1</option>
+                <option>Extended SPARQL (ARQ)</option>
+              </select>
+              </div>
+            <li class="nav-header">
               Ontologies
             </li>
             <li class="active">
@@ -182,11 +193,12 @@ $(document).ready(function() {
     triples = $("#triples").val(),
     tripleformat = $("#tripleformat").val(),
     inferencingSpec = $("#inferencingSpec").val(),
+    querySyntax = $("#querySyntax").val(),
     foafOnto = $("#foaf-onto").is(":checked"),
     siocOnto = $("#sioc-onto").is(":checked"),
       url = $form.attr('action');
 
-    $.post(url, {sparql: sparql, triples: triples, inferencingSpec: inferencingSpec, tripleformat: "n3", foafOnto: foafOnto, siocOnto: siocOnto}, function(data) {
+    $.post(url, {sparql: sparql, triples: triples, inferencingSpec: inferencingSpec, querySyntax: querySyntax, tripleformat: "n3", foafOnto: foafOnto, siocOnto: siocOnto}, function(data) {
       // Clear previous results/header
       $("#query-type").text("");
       $("#results-table").empty();

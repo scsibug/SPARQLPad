@@ -36,6 +36,7 @@ class SparqlProcessorResource extends ServerResource {
     val sparqlraw = form.getFirstValue("sparql")
     val triplesraw = form.getFirstValue("triples")
     val inferencingSpec = form.getFirstValue("inferencingSpec")
+    val querySyntax = form.getFirstValue("querySyntax")
     val tripleformatraw = form.getFirstValue("tripleformat")
     // Some hard-coded ontologies that can be easily referenced
     var ontos = List[String]()
@@ -48,6 +49,8 @@ class SparqlProcessorResource extends ServerResource {
       ontos = "sioc" +: ontos
     }
 
+    logger.info("syntax was "+querySyntax)
+    logger.info("inferencing was "+inferencingSpec)
     logger.info("sparql was "+sparqlraw)
     logger.info("triples was "+triplesraw)
     logger.info("triples-format was "+tripleformatraw)
@@ -55,7 +58,7 @@ class SparqlProcessorResource extends ServerResource {
     logger.info("sioc-onto was "+siocontoraw)
     if (sparqlraw != null && triplesraw != null && tripleformatraw != null) {
       setStatus(Status.SUCCESS_OK)
-      result = new JacksonRepresentation(processQuery(sparqlraw, triplesraw, inferencingSpec, "Turtle", ontos))
+      result = new JacksonRepresentation(processQuery(sparqlraw, triplesraw, inferencingSpec, querySyntax, "Turtle", ontos))
       logger.info(result.toString())
     } else {
       setStatus(Status.CLIENT_ERROR_BAD_REQUEST)
@@ -79,7 +82,7 @@ class SparqlProcessorResource extends ServerResource {
     m.read(new java.io.File("ontologies/sioc/services").toURI().toString())
   }
 
-  def processQuery(sparql:String, triples:String, inferencingSpec: String, format:String, ontos:List[String]):DraftResponse = {
+  def processQuery(sparql:String, triples:String, inferencingSpec: String, querySyntax: String, format:String, ontos:List[String]):DraftResponse = {
     var dr:DraftResponse = new DraftResponse()
     // Create a model with the triples.
     //val model = ModelFactory.createDefaultModel()
@@ -90,6 +93,12 @@ class SparqlProcessorResource extends ServerResource {
       case "OWL DL" => ModelFactory.createOntologyModel(OWL_DL_MEM_RULE_INF)
       case "OWL Full" => ModelFactory.createOntologyModel(OWL_MEM_RULE_INF)
       case _ => ModelFactory.createOntologyModel(RDFS_MEM)
+    }
+    val syntax = querySyntax match {
+      case "SPARQL 1.0" => Syntax.syntaxSPARQL_10
+      case "SPARQL 1.1" => Syntax.syntaxSPARQL_11
+      case "Extended SPARQL (ARQ)" => Syntax.syntaxARQ
+      case _ => Syntax.syntaxSPARQL_11
     }
     // Read ontologies
     if (ontos.contains("foaf")) {
@@ -102,7 +111,7 @@ class SparqlProcessorResource extends ServerResource {
     val in = new ByteArrayInputStream(triples.getBytes("UTF-8"));
     try {
       model.read(in, "http://sparqlpad.com/relative-uri/", format) // make up a relative URI so local file paths do not show through.
-      val query = QueryFactory.create(sparql, Syntax.syntaxARQ)
+      val query = QueryFactory.create(sparql, syntax)
       val queryExec:QueryExecution = QueryExecutionFactory.create(query, model)
       val queryType = query.getQueryType()
       dr = queryType match {
