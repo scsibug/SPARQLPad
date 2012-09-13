@@ -4,9 +4,11 @@ import org.restlet.data.{Protocol,Form,Status,MediaType}
 import org.restlet.resource.{ServerResource,Get,Post}
 import org.restlet.representation.{Representation,StringRepresentation}
 import org.restlet.ext.jackson.{JacksonRepresentation}
-import java.util.List
+//import java.util.List
 import java.util.Vector
 import org.slf4j._
+import com.hp.hpl.jena.rdf.model.Model
+import com.hp.hpl.jena.query.Syntax
 
 import scala.collection.JavaConversions._
 
@@ -35,12 +37,25 @@ class SparqlProcessorResource extends ServerResource {
     val triplesraw = form.getFirstValue("triples")
     val inferencingSpec = form.getFirstValue("inferencingSpec")
     val tripleformatraw = form.getFirstValue("tripleformat")
+    // Some hard-coded ontologies that can be easily referenced
+    var ontos = List[String]()
+    val foafontoraw = form.getFirstValue("foafOnto")
+    val siocontoraw = form.getFirstValue("siocOnto")
+    if (foafontoraw != null && foafontoraw.equals("on")) {
+      ontos = "foaf" +: ontos
+    }
+    if (siocontoraw != null && siocontoraw.equals("on")) {
+      ontos = "sioc" +: ontos
+    }
+
     logger.info("sparql was "+sparqlraw)
     logger.info("triples was "+triplesraw)
     logger.info("triples-format was "+tripleformatraw)
+    logger.info("foaf-onto was "+foafontoraw)
+    logger.info("sioc-onto was "+siocontoraw)
     if (sparqlraw != null && triplesraw != null && tripleformatraw != null) {
       setStatus(Status.SUCCESS_OK)
-      result = new JacksonRepresentation(processQuery(sparqlraw, triplesraw, inferencingSpec, "Turtle"))
+      result = new JacksonRepresentation(processQuery(sparqlraw, triplesraw, inferencingSpec, "Turtle", ontos))
       logger.info(result.toString())
     } else {
       setStatus(Status.CLIENT_ERROR_BAD_REQUEST)
@@ -49,22 +64,46 @@ class SparqlProcessorResource extends ServerResource {
     result
   }
 
-  def processQuery(sparql:String, triples:String, inferencingSpec: String, format:String):DraftResponse = {
+  // Load triples from the FOAF ontology
+  def loadFoafOntology(m:Model) = {
+    logger.info("Loading FOAF ontology")
+    m.read(new java.io.File("ontologies/foaf/20100809.rdf").toURI().toString())
+  }
+
+  // Load triples from the FOAF ontology
+  def loadSiocOntology(m:Model) = {
+    logger.info("Loading SIOC ontology")
+    m.read(new java.io.File("ontologies/sioc/types").toURI().toString())
+    m.read(new java.io.File("ontologies/sioc/ns").toURI().toString())
+    m.read(new java.io.File("ontologies/sioc/access").toURI().toString())
+    m.read(new java.io.File("ontologies/sioc/services").toURI().toString())
+  }
+
+  def processQuery(sparql:String, triples:String, inferencingSpec: String, format:String, ontos:List[String]):DraftResponse = {
     var dr:DraftResponse = new DraftResponse()
     // Create a model with the triples.
     //val model = ModelFactory.createDefaultModel()
     val model = inferencingSpec match {
       case "Transitive" => ModelFactory.createOntologyModel(RDFS_MEM_TRANS_INF) // only subClassOf/subPropertyOf transitive/reflexive relations
-      case "RDFS" => ModelFactory.createOntologyModel(RDFS_MEM_RDFS_INF) // (subset of) RDFS entailments
-      case "OWL" => ModelFactory.createOntologyModel(OWL_DL_MEM_RDFS_INF) // OWL DL
-      case _ => ModelFactory.createDefaultModel() // None
+      case "RDFS" => ModelFactory.createOntologyModel(RDFS_MEM_RDFS_INF)
+      case "OWL Lite" => ModelFactory.createOntologyModel(OWL_LITE_MEM_RULES_INF)
+      case "OWL DL" => ModelFactory.createOntologyModel(OWL_DL_MEM_RULE_INF)
+      case "OWL Full" => ModelFactory.createOntologyModel(OWL_MEM_RULE_INF)
+      case _ => ModelFactory.createOntologyModel(RDFS_MEM)
+    }
+    // Read ontologies
+    if (ontos.contains("foaf")) {
+      loadFoafOntology(model)
+    }
+    if (ontos.contains("sioc")) {
+      loadSiocOntology(model)
     }
     // TODO: Wrap in an ontology model for inferencing
     val in = new ByteArrayInputStream(triples.getBytes("UTF-8"));
     try {
       model.read(in, "http://sparqlpad.com/relative-uri/", format) // make up a relative URI so local file paths do not show through.
-      val query = QueryFactory.create(sparql)
-      val queryExec = QueryExecutionFactory.create(query,model)
+      val query = QueryFactory.create(sparql, Syntax.syntaxARQ)
+      val queryExec:QueryExecution = QueryExecutionFactory.create(query, model)
       val queryType = query.getQueryType()
       dr = queryType match {
         case QueryTypeAsk => {processAskQuery(queryExec)}

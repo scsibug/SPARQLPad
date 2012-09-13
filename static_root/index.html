@@ -63,9 +63,22 @@
                 <option>None</option>
                 <option>Transitive</option>
                 <option>RDFS</option>
-                <option>OWL</option>
+                <option>OWL Lite</option>
+                <option>OWL DL</option>
+                <option>OWL Full</option>
               </select>
               </div>
+            <li class="nav-header">
+              Ontologies
+            </li>
+            <li class="active">
+              <label id="foaf-label" class="checkbox">
+                <span id="foaf-tt" data-original-title="Friend of a Friend"><input type="checkbox" id="foaf-onto">FOAF</span>
+              </label>
+              <label class="checkbox" title="SIOC">
+                <span id="sioc-tt" data-original-title="Semantically-Interlinked Online Communities"><input type="checkbox" id="sioc-onto">SIOC</span>
+              </label>
+            </li>
             </li>
           </ul>
         </div>
@@ -124,7 +137,22 @@ var clearError = function() {
   $("#main-alert").alert('close');
 }
 
+var addOntology = function(onto) {
+  // triggered by selecting an ontology
+  // add prefix (if it doesn't exist) to sparql/triples
+  // save hidden form var with list of ontologies to reference on server
+}
+var removeOntology = function(onto) {
+}
+
 $(document).ready(function() {
+
+  $("#foaf-tt").tooltip({placement: 'right'});
+  $("#dc-tt").tooltip({placement: 'right'});
+  $("#sioc-tt").tooltip({placement: 'right'});
+
+  
+
   $("#show-example").click(function(event) {
     // Set text of SPARQL query
     var sparql_example = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
@@ -154,9 +182,11 @@ $(document).ready(function() {
     triples = $("#triples").val(),
     tripleformat = $("#tripleformat").val(),
     inferencingSpec = $("#inferencingSpec").val(),
+    foafOnto = $("#foaf-onto").is(":checked"),
+    siocOnto = $("#sioc-onto").is(":checked"),
       url = $form.attr('action');
 
-    $.post(url, {sparql: sparql, triples: triples, inferencingSpec: inferencingSpec, tripleformat: "n3"}, function(data) {
+    $.post(url, {sparql: sparql, triples: triples, inferencingSpec: inferencingSpec, tripleformat: "n3", foafOnto: foafOnto, siocOnto: siocOnto}, function(data) {
       // Clear previous results/header
       $("#query-type").text("");
       $("#results-table").empty();
