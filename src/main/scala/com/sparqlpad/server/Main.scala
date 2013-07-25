@@ -31,7 +31,7 @@ object Main {
     try {
       System.setProperty("org.restlet.engine.loggerFacadeClass","org.restlet.ext.slf4j.Slf4jLoggerFacade")
       val component = new Component()
-      component.getServers().add(Protocol.HTTP,8080)
+      component.getServers().add(Protocol.HTTP,10001)
       component.getClients().add(Protocol.FILE)
       component.getDefaultHost().attach(MainApp)
       logger.info("MainComponent starting")
